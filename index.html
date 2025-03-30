@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="scan-container">
+    <h1>LOUIS'S 网络设备扫描器</h1>
+
+    <form id="scan-form" method="POST" action="{{ url_for('index') }}">
+        <div class="form-group">
+            <label for="subnet">子网地址：</label>
+            <input type="text" id="subnet" name="subnet" value="172.22.53"
+                   placeholder="例如: 192.168.1" required>
+            <span class="hint"></span>
+        </div>
+
+        <div class="ip-range-group">
+            <div class="form-group">
+                <label for="start">起始IP：</label>
+                <input type="number" id="start" name="start"
+                       min="1" max="254" value="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="end">结束IP：</label>
+                <input type="number" id="end" name="end"
+                       min="2" max="255" value="20" required>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+
+        <button type="submit" class="btn-scan">
+            <span class="btn-text">开始扫描</span>
+            <div class="spinner hidden"></div>
+        </button>
+    </form>
+</div>
+
+<script>
+document.getElementById('scan-form').addEventListener('submit', function(e) {
+    const btn = this.querySelector('.btn-scan');
+    btn.disabled = true;
+    btn.querySelector('.btn-text').textContent = '扫描中...';
+    btn.querySelector('.spinner').classList.remove('hidden');
+});
+</script>
+
+<style>
+.scan-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.ip-range-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.ip-range-group .form-group {
+    flex: 1;
+}
+
+.btn-scan {
+    background: #4a6bff;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-scan:hover {
+    background: #3a5bef;
+}
+
+.spinner {
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top: 2px solid white;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none;
+}
+
+.error-message {
+    color: #e74c3c;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background: #fdecea;
+    border-radius: 4px;
+}
+</style>
+{% endblock %}
