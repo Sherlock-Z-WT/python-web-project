@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOUIS'S 网络扫描系统 - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LOUIS'S 网络设备扫描系统</h1>
+            <div class="legal-alert">
+                <div class="alert-icon">⚠️</div>
+                <ul class="legal-list">
+                    <li>仅限在授权环境使用</li>
+                    <li>禁止扫描非自有设备</li>
+                    <li>结果数据需加密存储</li>
+                </ul>
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
