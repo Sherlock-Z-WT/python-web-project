@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="result-container">
+    <div class="scan-header">
+        <h1>再次声明</h1>
+        <h1>本工具仅限在授权环境使用</h1>
+        <h1>禁止任何人扫描非自有设备</h1>
+        <h1>所有结果数据需加密存储</h1>
+        <h2>扫描范围：{{subnet}}.{{start}}-{{end}}</h2>
+        <div class="scan-stats">
+            <div class="stat-item">⏱️ 进度: <span id="progress-value">0</span>%</div>
+            <div class="stat-item">🔢 总数: {{ end - start + 1 }}</div>
+            <div class="stat-item">🟢 在线: <span id="online-count">0</span></div>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div id="progress-bar" class="progress-fill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div class="results-section">
+        <h3>在线设备列表</h3>
+        <div id="ip-list" class="ip-grid">
+            <div class="empty-state">扫描进行中...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 实时更新扫描进度
+function updateProgress() {
+    fetch('/scan-progress')
+        .then(response => {
+            if (!response.ok) throw new Error("网络响应不正常");
+            return response.json();
+        })
+        .then(data => {
+            // 更新进度条
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = data.progress + '%';
+            progressBar.textContent = data.progress.toFixed(1) + '%';
+
+            // 更新在线设备计数
+            document.getElementById('progress-value').textContent = data.progress.toFixed(1);
+            document.getElementById('online-count').textContent = data.online;
+
+            // 更新设备列表
+            const ipList = document.getElementById('ip-list');
+            if (data.reachable_ips && data.reachable_ips.length > 0) {
+                ipList.innerHTML = data.reachable_ips.map(ip => `
+                    <div class="ip-item">
+                        <span class="status-indicator"></span>
+                        <span class="ip-address">${ip}</span>
+                    </div>
+                `).join('');
+            } else if (data.progress >= 100) {
+                ipList.innerHTML = '<div class="empty-state">未发现在线设备</div>';
+            }
+
+            // 继续轮询直到扫描完成
+            if (data.progress < 100) {
+                setTimeout(updateProgress, 500);
+            }
+        })
+        .catch(error => {
+            console.error('获取进度失败:', error);
+            setTimeout(updateProgress, 1000);
+        });
+}
+
+// 页面加载后立即开始轮询
+document.addEventListener('DOMContentLoaded', updateProgress);
+</script>
+
+<style>
+.result-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.scan-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.scan-stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.stat-item {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.progress-container {
+    margin: 25px 0;
+}
+
+.progress-bar {
+    height: 10px;
+    background: #f0f0f0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #4CAF50;
+    transition: width 0.3s ease;
+    text-align: center;
+    font-size: 0.7rem;
+    color: white;
+    line-height: 10px;
+}
+
+.ip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.ip-item {
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: #4CAF50;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.ip-address {
+    font-family: monospace;
+}
+
+.empty-state {
+    color: #888;
+    text-align: center;
+    padding: 20px;
+    grid-column: 1 / -1;
+}
+</style>
+{% endblock %}
